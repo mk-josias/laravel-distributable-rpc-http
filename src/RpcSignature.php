@@ -52,6 +52,6 @@ final readonly class RpcSignature
             && $nonce !== ''
             && abs(time() - (int) $timestamp) <= $ttl
             && hash_equals($this->sign($timestamp, $nonce, $path, $body, $context), $signature)
-            && $this->cache->add("microservices:rpc:nonce:{$nonce}", true, $ttl * 2);
+            && $this->cache->add("distributable:rpc:nonce:{$nonce}", true, $ttl * 2);
     }
 }

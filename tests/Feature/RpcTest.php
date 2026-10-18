@@ -118,7 +118,7 @@ it('writes the answer as JSON on Redis, under the key Laravel names, so any lang
         $this->markTestSkipped('No Redis server reachable.');
     }
 
-    config()->set('microservices.rpc.cache', 'redis');
+    config()->set('distributable.rpc.cache', 'redis');
     Http::fake(['billing.test/*' => Http::response(['order_id' => 7, 'amount' => 120])]);
     $store = Cache::store('redis')->getStore();
 
@@ -137,7 +137,7 @@ it('files a tagged answer under its tag on Redis, so flushing the tag drops it',
         $this->markTestSkipped('No Redis server reachable.');
     }
 
-    config()->set('microservices.rpc.cache', 'redis');
+    config()->set('distributable.rpc.cache', 'redis');
     Http::fake(['billing.test/*' => Http::sequence()->push(['order_id' => 7, 'amount' => 120])->push(['order_id' => 7, 'amount' => 90])]);
     $billing = app(BillingRpcService::class);
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace RpcHttp;
 
-use Distributable\Contracts\Colocation;
+use Distributable\Services\ModuleRegistry;
 use Distributable\Services\Rpc\TransportManager;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Routing\Router;
@@ -30,11 +30,11 @@ final class RpcHttpServiceProvider extends ServiceProvider
         $config = $this->app->make(RpcHttp::class);
         $this->app->make(Router::class)->pushMiddlewareToGroup($config->getMiddlewareGroup(), VerifyRpcSignature::class);
 
-        foreach ($this->app->make(Colocation::class)->local() as $service) {
+        foreach ($this->app->make(ModuleRegistry::class)->localNames() as $service) {
             Route::post(str_replace('{service}', $service, $config->getPath()), RpcController::class)
                 ->middleware($config->getMiddlewareGroup())
                 ->defaults('service', $service)
-                ->name("microservices.rpc.{$service}");
+                ->name("distributable.rpc.{$service}");
         }
     }
 }

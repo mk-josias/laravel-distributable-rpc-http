@@ -9,12 +9,12 @@ composer require mk-josias/laravel-microservices-rpc-http
 Its provider is discovered. It registers the driver of the shipped `http` transport, and serves
 `POST {service}/rpc/{method}` for each service this process runs. Its settings are in
 `config/rpc-http.php` (`php artisan vendor:publish --tag=rpc-http-config`); the secret stays
-`microservices.rpc.secret`, shared by caller and called:
+`distributable.rpc.secret`, shared by caller and called:
 
 ```php
 return [
     // the same in every service
-    'path' => env('MICROSERVICES_RPC_PATH', '{service}/rpc/{method}'),
+    'path' => env('DISTRIBUTABLE_RPC_PATH', '{service}/rpc/{method}'),
     // the group of those routes, which checks the signature
     'middleware_group' => 'rpc',
     // seconds a signature stays valid

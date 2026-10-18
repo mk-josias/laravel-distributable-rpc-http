@@ -25,7 +25,7 @@ final readonly class RpcHttp
 
     public function getSecret(): string
     {
-        return (string) $this->config->get('microservices.rpc.secret', '');
+        return (string) $this->config->get('distributable.rpc.secret', '');
     }
 
     public function getSignatureTtl(): int
