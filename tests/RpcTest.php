@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
+use Distributable\Tests\Microservices\Fixtures\App\Contracts\OrdersService;
+use Distributable\Tests\Microservices\Fixtures\App\Models\Order;
+use Distributable\Tests\Microservices\Fixtures\Billing\Contracts\BillingService;
+use Distributable\Tests\Microservices\Fixtures\Billing\Services\BillingRpcService;
 use Illuminate\Http\Client\Request as ClientRequest;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Redis;
-use Microservices\Tests\Fixtures\App\Contracts\OrdersService;
-use Microservices\Tests\Fixtures\App\Models\Order;
-use Microservices\Tests\Fixtures\Billing\Contracts\BillingService;
-use Microservices\Tests\Fixtures\Billing\Services\BillingRpcService;
 use RpcHttp\RpcHttpServiceProvider;
 use RpcHttp\RpcSignature;
 

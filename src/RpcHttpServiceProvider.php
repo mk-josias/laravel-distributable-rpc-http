@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace RpcHttp;
 
+use Distributable\Contracts\Colocation;
+use Distributable\Services\Rpc\TransportManager;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
-use Microservices\Contracts\Colocation;
-use Microservices\Services\Rpc\TransportManager;
 
 final class RpcHttpServiceProvider extends ServiceProvider
 {

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace RpcHttp;
 
+use Distributable\Exceptions\ServiceException;
+use Distributable\Services\Rpc\LocalServices;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Microservices\Exceptions\ServiceException;
-use Microservices\Services\Rpc\LocalServices;
 
 /** The called side of HttpTransport: POST {service}/rpc/{method}, already verified by the `rpc` group. */
 final readonly class RpcController

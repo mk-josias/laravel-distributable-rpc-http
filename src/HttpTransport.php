@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace RpcHttp;
 
+use Distributable\Config\Rpc;
+use Distributable\Config\Streamer;
+use Distributable\Contracts\Rpc\Transport;
 use Illuminate\Http\Client\Factory as Http;
 use Illuminate\Support\Facades\Context;
-use Microservices\Config\Rpc;
-use Microservices\Config\Streamer;
-use Microservices\Contracts\Rpc\Transport;
 
 /** POST {host}/{service}/rpc/{method} with {contract, arguments}, signed, carrying the propagated context. */
 final readonly class HttpTransport implements Transport
