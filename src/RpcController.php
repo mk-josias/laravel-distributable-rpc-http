@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace RpcHttp;
+namespace Distributable\RpcHttp;
 
 use Distributable\Exceptions\ServiceException;
 use Distributable\Services\Rpc\LocalServices;

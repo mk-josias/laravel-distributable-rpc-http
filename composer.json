@@ -1,6 +1,6 @@
 {
-    "name": "mk-josias/laravel-microservices-rpc-http",
-    "description": "HTTP driver for the RPC of mk-josias/laravel-microservices: signed calls between services, one endpoint per service.",
+    "name": "mk-josias/laravel-distributable-rpc-http",
+    "description": "HTTP driver for the RPC of mk-josias/laravel-distributable: signed calls between services, one endpoint per service.",
     "homepage": "https://mk-josias.github.io/laravel-microservices/",
     "license": "MIT",
     "type": "library",
@@ -18,17 +18,17 @@
     ],
     "require": {
         "php": "^8.4",
-        "mk-josias/laravel-distributable-modules": "self.version"
+        "mk-josias/laravel-distributable": "self.version"
     },
     "autoload": {
         "psr-4": {
-            "RpcHttp\\": "src/"
+            "Distributable\\RpcHttp\\": "src/"
         }
     },
     "extra": {
         "laravel": {
             "providers": [
-                "RpcHttp\\RpcHttpServiceProvider"
+                "Distributable\\RpcHttp\\RpcHttpServiceProvider"
             ]
         }
     },

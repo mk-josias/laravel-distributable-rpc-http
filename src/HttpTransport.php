@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace RpcHttp;
+namespace Distributable\RpcHttp;
 
 use Distributable\Config\Rpc;
 use Distributable\Config\Streamer;

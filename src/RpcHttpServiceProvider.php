@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace RpcHttp;
+namespace Distributable\RpcHttp;
 
 use Distributable\Services\ModuleRegistry;
 use Distributable\Services\Rpc\TransportManager;

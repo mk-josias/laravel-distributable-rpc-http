@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace RpcHttp;
+namespace Distributable\RpcHttp;
 
 use Illuminate\Contracts\Cache\Repository as Cache;
 use Illuminate\Support\Str;
