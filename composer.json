@@ -18,7 +18,7 @@
     ],
     "require": {
         "php": "^8.4",
-        "mk-josias/laravel-microservices": "self.version"
+        "mk-josias/laravel-distributable-modules": "self.version"
     },
     "autoload": {
         "psr-4": {

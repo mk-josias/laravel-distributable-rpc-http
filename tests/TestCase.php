@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace RpcHttp\Tests;
 
-use Distributable\Tests\Microservices\TestCase as CoreTestCase;
+use Distributable\Tests\OrdersAppTestCase as CoreTestCase;
 use RpcHttp\RpcHttpServiceProvider;
 
 /** The core's `orders` application, with the http RPC driver installed. */

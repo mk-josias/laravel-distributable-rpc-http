@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use Distributable\Tests\Microservices\Fixtures\App\Contracts\OrdersService;
-use Distributable\Tests\Microservices\Fixtures\App\Models\Order;
-use Distributable\Tests\Microservices\Fixtures\Billing\Contracts\BillingService;
-use Distributable\Tests\Microservices\Fixtures\Billing\Services\BillingRpcService;
+use Distributable\Tests\Fixtures\Billing\Contracts\BillingService;
+use Distributable\Tests\Fixtures\Billing\Services\BillingRpcService;
+use Distributable\Tests\Fixtures\Orders\Contracts\OrdersService;
+use Distributable\Tests\Fixtures\Orders\Models\Order;
 use Illuminate\Http\Client\Request as ClientRequest;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
