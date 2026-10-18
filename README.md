@@ -1,37 +1,33 @@
-# Laravel Distributable Modules
+# HTTP RPC
 
-Design each Laravel module as a microservice: a context bounded to its module, contracts and
-events to talk to the others, and the same code whether modules run in the same process or in
-separate, distributed processes.
-
-## Install
+The `http` RPC driver of [laravel-microservices](https://github.com/mk-josias/laravel-microservices/tree/main/packages/core): signed calls between services.
 
 ```bash
-composer require mk-josias/laravel-distributable-modules
-php artisan modules:install
-php artisan modules:make iam --database
+composer require mk-josias/laravel-microservices-rpc-http
 ```
 
-Or start from the example application, three modules each with its own database:
+Its provider is discovered. It registers the driver of the shipped `http` transport, and serves
+`POST {service}/rpc/{method}` for each service this process runs. Its settings are in
+`config/rpc-http.php` (`php artisan vendor:publish --tag=rpc-http-config`); the secret stays
+`microservices.rpc.secret`, shared by caller and called:
 
-```bash
-composer create-project mk-josias/laravel-distributable-modules-starter my-app
+```php
+return [
+    // the same in every service
+    'path' => env('MICROSERVICES_RPC_PATH', '{service}/rpc/{method}'),
+    // the group of those routes, which checks the signature
+    'middleware_group' => 'rpc',
+    // seconds a signature stays valid
+    'signature_ttl' => 30,
+];
 ```
 
-## What is in this repository
+| What it guarantees | |
+|---|---|
+| Signed | an HMAC of the timestamp, a nonce, the path, the body and the propagated context |
+| Fresh | a call older than `signature_ttl` is rejected |
+| Once | each nonce is accepted once, through the cache |
+| Answers | 200 the return value as JSON · 404 `null` · 400 no such contract or method · 403 bad signature |
 
-| Folder | Published as | |
-|---|---|---|
-| `packages/core` | `mk-josias/laravel-distributable-modules` | the package: [README and documentation](packages/core/README.md) |
-| `starter` | `mk-josias/laravel-distributable-modules-starter` | the example application |
-
-It builds on [laravel-microservices](https://github.com/mk-josias/laravel-microservices), which
-provides the events, calls and copies between services.
-
-## Developing
-
-`composer.json` reaches laravel-microservices through a path repository at
-`../laravel-microservices`: clone it next to this repository, then run `composer check`
-(Pint, PHPStan, Pest).
-
-MIT license.
+What a service written in another language has to send is in
+[Services in other languages](../core/docs/other-languages.md).

@@ -1,96 +1,35 @@
 {
-    "name": "mk-josias/laravel-distributable-modules-monorepo",
-    "description": "Development of laravel-distributable-modules and its starter; packages/core and starter/ are each published on their own.",
+    "name": "mk-josias/laravel-microservices-rpc-http",
+    "description": "HTTP driver for the RPC of mk-josias/laravel-microservices: signed calls between services, one endpoint per service.",
+    "homepage": "https://mk-josias.github.io/laravel-microservices/",
     "license": "MIT",
-    "type": "project",
+    "type": "library",
+    "keywords": [
+        "laravel",
+        "microservices",
+        "rpc",
+        "http"
+    ],
+    "authors": [
+        {
+            "name": "Josias Mekontso",
+            "email": "josiasmekontso.it@gmail.com"
+        }
+    ],
     "require": {
         "php": "^8.4",
-        "laravel/framework": "^12.0 || ^13.0",
-        "mk-josias/laravel-microservices": "^0.2"
-    },
-    "require-dev": {
-        "larastan/larastan": "^3.10",
-        "laravel/octane": "^2.20",
-        "laravel/pint": "^1.0",
-        "mk-josias/laravel-microservices-rpc-http": "^0.2",
-        "mk-josias/laravel-microservices-stream-queue": "^0.2",
-        "mk-josias/laravel-microservices-stream-redis": "^0.2",
-        "orchestra/testbench": "^10.0 || ^11.0",
-        "pestphp/pest": "^3.0 || ^4.0"
-    },
-    "repositories": {
-        "microservices": {
-            "type": "path",
-            "url": "../laravel-microservices/packages/core",
-            "options": {
-                "symlink": true,
-                "versions": {
-                    "mk-josias/laravel-microservices": "0.2.0"
-                }
-            }
-        },
-        "rpc-http": {
-            "type": "path",
-            "url": "../laravel-microservices/packages/rpc-http",
-            "options": {
-                "symlink": true,
-                "versions": {
-                    "mk-josias/laravel-microservices-rpc-http": "0.2.0"
-                }
-            }
-        },
-        "stream-redis": {
-            "type": "path",
-            "url": "../laravel-microservices/packages/stream-redis",
-            "options": {
-                "symlink": true,
-                "versions": {
-                    "mk-josias/laravel-microservices-stream-redis": "0.2.0"
-                }
-            }
-        },
-        "stream-queue": {
-            "type": "path",
-            "url": "../laravel-microservices/packages/stream-queue",
-            "options": {
-                "symlink": true,
-                "versions": {
-                    "mk-josias/laravel-microservices-stream-queue": "0.2.0"
-                }
-            }
-        }
+        "mk-josias/laravel-microservices": "self.version"
     },
     "autoload": {
         "psr-4": {
-            "Distributable\\": "packages/core/src/"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "Distributable\\Tests\\": "packages/core/tests/"
+            "RpcHttp\\": "src/"
         }
     },
     "extra": {
         "laravel": {
             "providers": [
-                "Distributable\\Providers\\DistributableServiceProvider"
+                "RpcHttp\\RpcHttpServiceProvider"
             ]
-        }
-    },
-    "scripts": {
-        "test": "pest",
-        "lint": "pint",
-        "analyse": "phpstan analyse --memory-limit=1G",
-        "check": [
-            "pint --test",
-            "@analyse",
-            "@test"
-        ]
-    },
-    "config": {
-        "sort-packages": true,
-        "allow-plugins": {
-            "pestphp/pest-plugin": true
         }
     },
     "minimum-stability": "stable"
