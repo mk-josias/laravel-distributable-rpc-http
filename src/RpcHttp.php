@@ -6,15 +6,15 @@ namespace Distributable\RpcHttp;
 
 use Illuminate\Contracts\Config\Repository;
 
-/** The rpc-http.* settings of calls over HTTP, and the secret every service shares; read live, never snapshotted. */
+/** The rpc-http.* settings of calls over HTTP, and the secret every module shares; read live, never snapshotted. */
 final readonly class RpcHttp
 {
     public function __construct(private Repository $config) {}
 
-    /** Where a service answers a call, the same for caller and called: {service} and {method} are filled in. */
+    /** Where a module answers a message, the same for caller and called: {module}, {version} and {message} are filled in. */
     public function getPath(): string
     {
-        return trim((string) $this->config->get('rpc-http.path', '{service}/rpc/{method}'), '/');
+        return trim((string) $this->config->get('rpc-http.path', '{module}/rpc/{version}/{message}'), '/');
     }
 
     /** The middleware group of the called side's routes, which checks the signature. */

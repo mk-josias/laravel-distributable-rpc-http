@@ -9,8 +9,9 @@ use Distributable\Config\Streamer;
 use Distributable\Contracts\Rpc\Transport;
 use Illuminate\Http\Client\Factory as Http;
 use Illuminate\Support\Facades\Context;
+use Illuminate\Validation\ValidationException;
 
-/** POST {host}/{service}/rpc/{method} with {contract, arguments}, signed, carrying the propagated context. */
+/** POST {host}/{module}/rpc/{version}/{message} with {payload}, signed, carrying the propagated context. */
 final readonly class HttpTransport implements Transport
 {
     public function __construct(
@@ -21,19 +22,23 @@ final readonly class HttpTransport implements Transport
         private RpcSignature $signature,
     ) {}
 
-    public function invoke(string $service, string $contract, string $method, array $arguments = []): mixed
+    public function invoke(string $module, string $name, int $version, array $payload): mixed
     {
-        $path = '/'.strtr($this->config->getPath(), ['{service}' => $service, '{method}' => $method]);
-        $body = json_encode(['contract' => $contract, 'arguments' => (object) $arguments], JSON_THROW_ON_ERROR);
+        $path = '/'.strtr($this->config->getPath(), ['{module}' => $module, '{version}' => (string) $version, '{message}' => $name]);
+        $body = json_encode(['payload' => (object) $payload], JSON_THROW_ON_ERROR);
         $context = json_encode(Context::only($this->streamer->getPropagate()), JSON_THROW_ON_ERROR);
 
         $response = $this->http
             ->withHeaders(['Accept' => 'application/json', ...$this->signature->headers($path, $body, $context)])
             ->withBody($body, 'application/json')
-            ->post(rtrim($this->rpc->getHost($service), '/').$path);
+            ->post(rtrim($this->rpc->getHost($module), '/').$path);
 
         if ($response->notFound()) {
             return null;
+        }
+
+        if ($response->status() === 422) {
+            throw ValidationException::withMessages((array) $response->json('errors'));
         }
 
         $response->throw();

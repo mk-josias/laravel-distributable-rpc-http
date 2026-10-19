@@ -5,32 +5,31 @@ declare(strict_types=1);
 namespace Distributable\RpcHttp;
 
 use Distributable\Exceptions\ServiceException;
-use Distributable\Services\Rpc\LocalServices;
+use Distributable\Services\Rpc\Messages;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-/** The called side of HttpTransport: POST {service}/rpc/{method}, already verified by the `rpc` group. */
+/** The called side of HttpTransport: POST {module}/rpc/{version}/{message}, already verified by the `rpc` group. */
 final readonly class RpcController
 {
-    public function __construct(private LocalServices $services) {}
+    public function __construct(private Messages $messages) {}
 
     public function __invoke(Request $request): JsonResponse
     {
         // The signed body as sent: input() would carry the global middleware's rewrites ('' becomes null).
         $body = (array) json_decode($request->getContent(), true, flags: JSON_THROW_ON_ERROR);
-        /** @var class-string $contract */
-        $contract = (string) ($body['contract'] ?? '');
-        /** @var array<string, mixed> $arguments */
-        $arguments = (array) ($body['arguments'] ?? []);
-        $service = (string) $request->route('service');
-        $method = (string) $request->route('method');
+        /** @var array<string, mixed> $payload */
+        $payload = (array) ($body['payload'] ?? []);
+        $module = (string) $request->route('module');
+        $name = (string) $request->route('message');
+        $version = (int) $request->route('version');
 
         // The caller's mistake, not a failure here; 404 already means a null answer.
-        if (! $this->services->answers($service, $contract, $method)) {
-            return response()->json(['message' => ServiceException::unknownRpcMethod($service, $contract, $method)->getMessage()], 400);
+        if (! $this->messages->answers($module, $name, $version)) {
+            return response()->json(['message' => ServiceException::unknownRpcMessage($module, $name, $version)->getMessage()], 400);
         }
 
-        $answer = $this->services->call($service, $contract, $method, $arguments);
+        $answer = $this->messages->answer($module, $name, $version, $payload);
 
         return $answer === null ? response()->json(null, 404) : response()->json($answer);
     }

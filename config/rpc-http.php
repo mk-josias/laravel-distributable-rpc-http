@@ -1,8 +1,8 @@
 <?php
 
 return [
-    // Where a service answers a call, the same in every service: {service} and {method} are filled in.
-    'path' => env('DISTRIBUTABLE_RPC_PATH', '{service}/rpc/{method}'),
+    // Where a module answers a message, the same in every module: {module}, {version} and {message} are filled in.
+    'path' => env('DISTRIBUTABLE_RPC_PATH', '{module}/rpc/{version}/{message}'),
 
     // The middleware group of those routes, which checks the signature.
     'middleware_group' => 'rpc',

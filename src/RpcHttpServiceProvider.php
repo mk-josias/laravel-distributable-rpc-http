@@ -22,7 +22,7 @@ final class RpcHttpServiceProvider extends ServiceProvider
         });
     }
 
-    /** The called side of HttpTransport, one endpoint per local service: nothing unsigned reaches it. */
+    /** The called side of HttpTransport, one endpoint per local module: nothing unsigned reaches it. */
     public function boot(): void
     {
         $this->publishes([__DIR__.'/../config/rpc-http.php' => config_path('rpc-http.php')], 'rpc-http-config');
@@ -30,11 +30,12 @@ final class RpcHttpServiceProvider extends ServiceProvider
         $config = $this->app->make(RpcHttp::class);
         $this->app->make(Router::class)->pushMiddlewareToGroup($config->getMiddlewareGroup(), VerifyRpcSignature::class);
 
-        foreach ($this->app->make(ModuleRegistry::class)->localNames() as $service) {
-            Route::post(str_replace('{service}', $service, $config->getPath()), RpcController::class)
+        foreach ($this->app->make(ModuleRegistry::class)->localNames() as $module) {
+            Route::post(str_replace('{module}', $module, $config->getPath()), RpcController::class)
+                ->where('version', '[0-9]+')
                 ->middleware($config->getMiddlewareGroup())
-                ->defaults('service', $service)
-                ->name("distributable.rpc.{$service}");
+                ->defaults('module', $module)
+                ->name("distributable.rpc.{$module}");
         }
     }
 }

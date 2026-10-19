@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 use Distributable\RpcHttp\RpcHttpServiceProvider;
 use Distributable\RpcHttp\RpcSignature;
-use Distributable\Tests\Fixtures\Billing\Contracts\BillingService;
-use Distributable\Tests\Fixtures\Billing\Services\BillingRpcService;
-use Distributable\Tests\Fixtures\Orders\Contracts\OrdersService;
+use Distributable\Tests\Fixtures\Billing\Services\BillingClient;
 use Distributable\Tests\Fixtures\Orders\Models\Order;
 use Illuminate\Http\Client\Request as ClientRequest;
 use Illuminate\Support\Facades\Cache;
@@ -14,93 +12,91 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Redis;
 
 /**
- * @param  array<string, mixed>  $arguments
+ * @param  array<string, mixed>  $payload
  * @return array{0: array<string, mixed>, 1: array<string, string>}
  */
-function signedCall(string $path, string $contract, array $arguments = [], array $context = []): array
+function signedCall(string $path, array $payload = [], array $context = []): array
 {
-    $body = ['contract' => $contract, 'arguments' => (object) $arguments];
+    $body = ['payload' => (object) $payload];
 
     return [$body, app(RpcSignature::class)->headers($path, json_encode($body), json_encode((object) $context))];
 }
 
-it('calls a service running elsewhere over signed HTTP, on the route named after it', function () {
+it('calls a module running elsewhere over signed HTTP, on the route named after it', function () {
     Http::fake(['billing.test/*' => Http::response(['order_id' => 7, 'amount' => 120])]);
 
-    expect(app(BillingService::class))->toBeInstanceOf(BillingRpcService::class)
-        ->and(app(BillingService::class)->invoiceFor(7))->toBe(['order_id' => 7, 'amount' => 120]);
+    expect(app(BillingClient::class)->invoiceFor(7))->toBe(['order_id' => 7, 'amount' => 120]);
 
     Http::assertSent(function (ClientRequest $request): bool {
         $signature = app(RpcSignature::class)->sign(
             $request->header(RpcSignature::TIMESTAMP_HEADER)[0],
             $request->header(RpcSignature::NONCE_HEADER)[0],
-            '/billing/rpc/invoiceFor',
+            '/billing/rpc/1/invoice-for',
             $request->body(),
             $request->header(RpcSignature::CONTEXT_HEADER)[0],
         );
 
-        return $request->url() === 'http://billing.test/billing/rpc/invoiceFor'
-            && $request['contract'] === BillingService::class
-            && $request['arguments'] === ['orderId' => 7]
+        return $request->url() === 'http://billing.test/billing/rpc/1/invoice-for'
+            && $request['payload'] === ['orderId' => 7]
             && $request->header(RpcSignature::SIGNATURE_HEADER)[0] === $signature;
     });
 });
 
-it('reads a 404 from the other service as null', function () {
+it('reads a 404 from the other module as null', function () {
     Http::fake(['billing.test/*' => Http::response(null, 404)]);
 
-    expect(app(BillingService::class)->invoiceFor(7))->toBeNull();
+    expect(app(BillingClient::class)->invoiceFor(7))->toBeNull();
 });
 
-it('answers its own contract on a route named after this service', function () {
+it('answers its own messages on a route named after this module', function () {
     $order = Order::query()->create(['total' => 120]);
-    [$body, $headers] = signedCall('/orders/rpc/find', OrdersService::class, ['id' => $order->id]);
+    [$body, $headers] = signedCall('/orders/rpc/1/find-order', ['id' => $order->id]);
 
-    $this->postJson('/orders/rpc/find', $body, $headers)->assertOk()->assertExactJson(['id' => $order->id, 'total' => 120]);
+    $this->postJson('/orders/rpc/1/find-order', $body, $headers)->assertOk()->assertExactJson(['id' => $order->id, 'total' => 120]);
 });
 
-it('answers null with a 404, an unknown method with a 400, an unsigned call with a 403', function () {
-    [$body, $headers] = signedCall('/orders/rpc/find', OrdersService::class, ['id' => 404]);
-    $this->postJson('/orders/rpc/find', $body, $headers)->assertNotFound();
+it('answers null with a 404, an unknown message with a 400, an unsigned call with a 403', function () {
+    [$body, $headers] = signedCall('/orders/rpc/1/find-order', ['id' => 404]);
+    $this->postJson('/orders/rpc/1/find-order', $body, $headers)->assertNotFound();
 
-    [$body, $headers] = signedCall('/orders/rpc/cancel', OrdersService::class);
-    $this->postJson('/orders/rpc/cancel', $body, $headers)->assertStatus(400)
-        ->assertJsonPath('message', fn (string $message): bool => str_contains($message, 'Service [orders] answers no'));
+    [$body, $headers] = signedCall('/orders/rpc/1/cancel-order');
+    $this->postJson('/orders/rpc/1/cancel-order', $body, $headers)->assertStatus(400)
+        ->assertJsonPath('message', fn (string $message): bool => str_contains($message, 'Module [orders] answers no'));
 
-    $this->postJson('/orders/rpc/find', ['contract' => OrdersService::class, 'arguments' => ['id' => 1]])->assertForbidden();
+    $this->postJson('/orders/rpc/1/find-order', ['payload' => ['id' => 1]])->assertForbidden();
 });
 
 it('accepts a signed call once', function () {
-    [$body, $headers] = signedCall('/orders/rpc/find', OrdersService::class, ['id' => 1]);
+    [$body, $headers] = signedCall('/orders/rpc/1/find-order', ['id' => 1]);
 
-    $this->postJson('/orders/rpc/find', $body, $headers)->assertNotFound();
-    $this->postJson('/orders/rpc/find', $body, $headers)->assertForbidden();
+    $this->postJson('/orders/rpc/1/find-order', $body, $headers)->assertNotFound();
+    $this->postJson('/orders/rpc/1/find-order', $body, $headers)->assertForbidden();
 });
 
 it('restores the propagated context on the called side', function () {
-    [$body, $headers] = signedCall('/orders/rpc/traceId', OrdersService::class, [], ['trace_id' => 'abc']);
+    [$body, $headers] = signedCall('/orders/rpc/1/trace-id', [], ['trace_id' => 'abc']);
 
-    $this->postJson('/orders/rpc/traceId', $body, $headers)->assertOk()->assertContent('"abc"');
+    $this->postJson('/orders/rpc/1/trace-id', $body, $headers)->assertOk()->assertContent('"abc"');
 });
 
 it('calls and answers on the path rpc-http.path names, in the group it names', function () {
-    config()->set('rpc-http.path', 'internal/{service}/{method}');
+    config()->set('rpc-http.path', 'internal/{module}/{version}/{message}');
     config()->set('rpc-http.middleware_group', 'internal-rpc');
     (new RpcHttpServiceProvider(app()))->boot();
     Http::fake(['billing.test/*' => Http::response(['order_id' => 7])]);
 
-    app(BillingService::class)->invoiceFor(7);
+    app(BillingClient::class)->invoiceFor(7);
     $order = Order::query()->create(['total' => 120]);
-    [$body, $headers] = signedCall('/internal/orders/find', OrdersService::class, ['id' => $order->id]);
+    [$body, $headers] = signedCall('/internal/orders/1/find-order', ['id' => $order->id]);
 
-    Http::assertSent(fn (ClientRequest $request): bool => $request->url() === 'http://billing.test/internal/billing/invoiceFor');
-    $this->postJson('/internal/orders/find', $body, $headers)->assertOk();
-    $this->postJson('/internal/orders/find', ['contract' => OrdersService::class, 'arguments' => ['id' => 1]])->assertForbidden();
+    Http::assertSent(fn (ClientRequest $request): bool => $request->url() === 'http://billing.test/internal/billing/1/invoice-for');
+    $this->postJson('/internal/orders/1/find-order', $body, $headers)->assertOk();
+    $this->postJson('/internal/orders/1/find-order', ['payload' => ['id' => 1]])->assertForbidden();
 });
 
 it('keeps an answer until the owner forgets it, with or without tags', function (?array $tags) {
     Http::fake(['billing.test/*' => Http::sequence()->push(['order_id' => 7, 'amount' => 120])->push(['order_id' => 7, 'amount' => 90])]);
-    $billing = app(BillingRpcService::class);
+    $billing = app(BillingClient::class);
 
     expect($billing->cachedInvoiceFor(7, $tags))->toBe(['order_id' => 7, 'amount' => 120])
         ->and($billing->cachedInvoiceFor(7, $tags))->toBe(['order_id' => 7, 'amount' => 120]);
@@ -122,9 +118,9 @@ it('writes the answer as JSON on Redis, under the key Laravel names, so any lang
     Http::fake(['billing.test/*' => Http::response(['order_id' => 7, 'amount' => 120])]);
     $store = Cache::store('redis')->getStore();
 
-    app(BillingRpcService::class)->cachedInvoiceFor(7);
+    app(BillingClient::class)->cachedInvoiceFor(7);
     $written = $store->connection()->get($store->getPrefix().'billing:invoice:7');
-    app(BillingRpcService::class)->forgetInvoice(7);
+    app(BillingClient::class)->forgetInvoice(7);
 
     expect($written)->toBe('{"order_id":7,"amount":120}')
         ->and($store->connection()->get($store->getPrefix().'billing:invoice:7'))->toBeIn([null, false]);
@@ -139,7 +135,7 @@ it('files a tagged answer under its tag on Redis, so flushing the tag drops it',
 
     config()->set('distributable.rpc.cache', 'redis');
     Http::fake(['billing.test/*' => Http::sequence()->push(['order_id' => 7, 'amount' => 120])->push(['order_id' => 7, 'amount' => 90])]);
-    $billing = app(BillingRpcService::class);
+    $billing = app(BillingClient::class);
 
     $billing->cachedInvoiceFor(7, ['billing']);
     Cache::store('redis')->tags(['billing'])->flush();
