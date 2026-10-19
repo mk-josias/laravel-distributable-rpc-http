@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Distributable\RpcHttp;
 
 use Distributable\Exceptions\ServiceException;
-use Distributable\Services\Rpc\Messages;
+use Distributable\Services\Rpc\MessageRegistry;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /** The called side of HttpTransport: POST {module}/rpc/{version}/{message}, already verified by the `rpc` group. */
 final readonly class RpcController
 {
-    public function __construct(private Messages $messages) {}
+    public function __construct(private MessageRegistry $messages) {}
 
     public function __invoke(Request $request): JsonResponse
     {
