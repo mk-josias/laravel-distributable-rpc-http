@@ -7,7 +7,7 @@ namespace Distributable\RpcHttp;
 use Illuminate\Contracts\Cache\Repository as Cache;
 use Illuminate\Support\Str;
 
-/** Signs and checks calls between services: an HMAC over the timestamp, nonce, path, body and context. */
+/** Signs and checks calls between modules: an HMAC over the timestamp, nonce, path, body and context. */
 final readonly class RpcSignature
 {
     public const string TIMESTAMP_HEADER = 'X-Rpc-Timestamp';

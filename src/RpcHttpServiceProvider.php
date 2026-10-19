@@ -31,6 +31,13 @@ final class RpcHttpServiceProvider extends ServiceProvider
         $kernel = $this->app->make(Kernel::class);
         $kernel->pushMiddleware(RpcPortGate::class);
 
+        // Declared here, after every provider registered, so the order of the packages does not matter.
+        config(['distributable.rpc.transports' => ['http' => ['driver' => 'http'], ...(array) config('distributable.rpc.transports', [])]]);
+
+        if (config('distributable.rpc.transport') === null) {
+            config(['distributable.rpc.transport' => 'http']);
+        }
+
         $this->publishes([__DIR__.'/../config/rpc-http.php' => config_path('rpc-http.php')], 'rpc-http-config');
 
         $config = $this->app->make(RpcHttp::class);

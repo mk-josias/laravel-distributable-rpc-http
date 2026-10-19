@@ -1,6 +1,6 @@
 {
     "name": "mk-josias/laravel-distributable-rpc-http",
-    "description": "HTTP driver for the RPC of mk-josias/laravel-distributable: signed calls between services, one endpoint per service.",
+    "description": "HTTP driver for the RPC of mk-josias/laravel-distributable: signed calls between modules, one endpoint per module.",
     "homepage": "https://mk-josias.github.io/laravel-distributable/",
     "license": "MIT",
     "type": "library",

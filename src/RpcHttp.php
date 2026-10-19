@@ -39,7 +39,7 @@ final readonly class RpcHttp
 
     public function getSecret(): string
     {
-        return (string) $this->config->get('distributable.rpc.secret', '');
+        return (string) $this->config->get('rpc-http.secret', '');
     }
 
     public function getSignatureTtl(): int

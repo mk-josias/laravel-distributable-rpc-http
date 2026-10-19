@@ -10,6 +10,9 @@ return [
     // The port the RPC answers on, in a process of its own (`rpc:serve`); null: wherever the application is served.
     'port' => env('DISTRIBUTABLE_RPC_PORT'),
 
+    // Signs every call; the caller and the called process must share it, so it falls back to APP_KEY.
+    'secret' => env('DISTRIBUTABLE_RPC_SECRET', env('APP_KEY', '')),
+
     // Seconds a signature stays valid.
     'signature_ttl' => 30,
 ];

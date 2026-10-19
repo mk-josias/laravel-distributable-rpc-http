@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Distributable\RpcHttp;
 
-use Distributable\Exceptions\ServiceException;
+use Distributable\Exceptions\ModuleException;
 use Distributable\Services\Rpc\MessageRegistry;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -26,7 +26,7 @@ final readonly class RpcController
 
         // The caller's mistake, not a failure here; 404 already means a null answer.
         if (! $this->messages->answers($module, $name, $version)) {
-            return response()->json(['message' => ServiceException::unknownRpcMessage($module, $name, $version)->getMessage()], 400);
+            return response()->json(['message' => ModuleException::unknownRpcMessage($module, $name, $version)->getMessage()], 400);
         }
 
         $answer = $this->messages->answer($module, $name, $version, $payload);

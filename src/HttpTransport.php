@@ -6,14 +6,15 @@ namespace Distributable\RpcHttp;
 
 use Distributable\Config\Rpc;
 use Distributable\Config\Streamer;
-use Distributable\Contracts\Rpc\Serves;
+use Distributable\Contracts\Rpc\ReportsRpcProblems;
+use Distributable\Contracts\Rpc\ServesRpc;
 use Distributable\Contracts\Rpc\Transport;
 use Illuminate\Http\Client\Factory as Http;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Validation\ValidationException;
 
 /** POST {host}/{module}/rpc/{version}/{message} with {payload}, signed, carrying the propagated context. */
-final readonly class HttpTransport implements Serves, Transport
+final readonly class HttpTransport implements ReportsRpcProblems, ServesRpc, Transport
 {
     public function __construct(
         private Http $http,
@@ -22,6 +23,11 @@ final readonly class HttpTransport implements Serves, Transport
         private Streamer $streamer,
         private RpcSignature $signature,
     ) {}
+
+    public function problems(): array
+    {
+        return $this->config->getSecret() === '' ? ['rpc-http.secret is empty: set DISTRIBUTABLE_RPC_SECRET or APP_KEY.'] : [];
+    }
 
     public function serve(): int
     {
