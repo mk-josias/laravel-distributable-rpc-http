@@ -7,6 +7,9 @@ return [
     // The middleware group of those routes, which checks the signature.
     'middleware_group' => 'rpc',
 
+    // The port the RPC answers on, in a process of its own (`rpc:serve`); null: wherever the application is served.
+    'port' => env('DISTRIBUTABLE_RPC_PORT'),
+
     // Seconds a signature stays valid.
     'signature_ttl' => 30,
 ];

@@ -6,13 +6,14 @@ namespace Distributable\RpcHttp;
 
 use Distributable\Config\Rpc;
 use Distributable\Config\Streamer;
+use Distributable\Contracts\Rpc\Serves;
 use Distributable\Contracts\Rpc\Transport;
 use Illuminate\Http\Client\Factory as Http;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Validation\ValidationException;
 
 /** POST {host}/{module}/rpc/{version}/{message} with {payload}, signed, carrying the propagated context. */
-final readonly class HttpTransport implements Transport
+final readonly class HttpTransport implements Serves, Transport
 {
     public function __construct(
         private Http $http,
@@ -21,6 +22,16 @@ final readonly class HttpTransport implements Transport
         private Streamer $streamer,
         private RpcSignature $signature,
     ) {}
+
+    public function serve(): int
+    {
+        $port = $this->config->getPort() ?? throw RpcHttpException::withoutPort();
+
+        // Octane replaces this process: its signals and its exit code are the server's own.
+        pcntl_exec(PHP_BINARY, [base_path('artisan'), 'octane:start', "--port={$port}", '--host=0.0.0.0']);
+
+        throw RpcHttpException::serverNotStarted();
+    }
 
     public function invoke(string $module, string $name, int $version, array $payload): mixed
     {

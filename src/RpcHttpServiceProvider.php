@@ -7,6 +7,8 @@ namespace Distributable\RpcHttp;
 use Distributable\Services\ModuleRegistry;
 use Distributable\Services\Rpc\TransportManager;
 use Illuminate\Contracts\Container\Container;
+use Illuminate\Contracts\Http\Kernel;
+use Illuminate\Foundation\Http\Kernel as FoundationKernel;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
@@ -25,6 +27,10 @@ final class RpcHttpServiceProvider extends ServiceProvider
     /** The called side of HttpTransport, one endpoint per local module: nothing unsigned reaches it. */
     public function boot(): void
     {
+        /** @var FoundationKernel $kernel */
+        $kernel = $this->app->make(Kernel::class);
+        $kernel->pushMiddleware(RpcPortGate::class);
+
         $this->publishes([__DIR__.'/../config/rpc-http.php' => config_path('rpc-http.php')], 'rpc-http-config');
 
         $config = $this->app->make(RpcHttp::class);

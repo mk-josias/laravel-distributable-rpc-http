@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Distributable\RpcHttp\HttpTransport;
+use Distributable\RpcHttp\RpcHttpException;
 use Distributable\RpcHttp\RpcHttpServiceProvider;
 use Distributable\RpcHttp\RpcSignature;
 use Distributable\Tests\Fixtures\Billing\Services\BillingClient;
@@ -10,6 +12,7 @@ use Illuminate\Http\Client\Request as ClientRequest;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Route;
 
 /**
  * @param  array<string, mixed>  $payload
@@ -143,3 +146,24 @@ it('files a tagged answer under its tag on Redis, so flushing the tag drops it',
     expect($billing->cachedInvoiceFor(7, ['billing']))->toBe(['order_id' => 7, 'amount' => 90]);
     $billing->forgetInvoice(7, ['billing']);
 });
+
+it('answers an RPC call on its own port only, when rpc-http.port names one', function () {
+    config()->set('rpc-http.port', 8001);
+    $order = Order::query()->create(['total' => 120]);
+    [$body, $headers] = signedCall('/orders/rpc/1/find-order', ['id' => $order->id]);
+
+    $this->postJson('http://localhost:8000/orders/rpc/1/find-order', $body, $headers)->assertNotFound();
+    $this->postJson('http://localhost:8001/orders/rpc/1/find-order', $body, $headers)->assertOk();
+});
+
+it('answers no other route on the RPC port', function () {
+    Route::get('ping', fn () => 'pong');
+    config()->set('rpc-http.port', 8001);
+
+    $this->get('http://localhost:8000/ping')->assertOk();
+    $this->get('http://localhost:8001/ping')->assertNotFound();
+});
+
+it('needs a port to start its own process', function () {
+    app(HttpTransport::class)->serve();
+})->throws(RpcHttpException::class, 'DISTRIBUTABLE_RPC_PORT');

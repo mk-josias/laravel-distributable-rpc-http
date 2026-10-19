@@ -23,6 +23,20 @@ final readonly class RpcHttp
         return (string) $this->config->get('rpc-http.middleware_group', 'rpc');
     }
 
+    /** The port the calls arrive on when the RPC has a process of its own (`rpc:serve`); null: wherever the application is served. */
+    public function getPort(): ?int
+    {
+        $port = $this->config->get('rpc-http.port');
+
+        return $port === null || $port === '' ? null : (int) $port;
+    }
+
+    /** The path as a pattern Request::is() reads: the same for caller and called. */
+    public function getPathPattern(): string
+    {
+        return str_replace(['{module}', '{version}', '{message}'], '*', $this->getPath());
+    }
+
     public function getSecret(): string
     {
         return (string) $this->config->get('distributable.rpc.secret', '');
