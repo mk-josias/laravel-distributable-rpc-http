@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Distributable\RpcHttp\Tests;
 
 use Distributable\RpcHttp\RpcHttpServiceProvider;
-use Distributable\Tests\OrdersAppTestCase as CoreTestCase;
+use Distributable\Tests\PaymentsAppTestCase as CoreTestCase;
 use Illuminate\Foundation\Application;
 
-/** The core's `orders` application, with the http RPC driver installed. */
+/** The core's `payments` application, with the http RPC driver installed. */
 abstract class TestCase extends CoreTestCase
 {
     /** @return list<class-string> */
