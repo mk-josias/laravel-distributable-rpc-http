@@ -28,12 +28,11 @@ return [
 ];
 ```
 
-| What it guarantees | |
-|---|---|
-| Signed | an HMAC of the timestamp, a nonce, the path, the body and the propagated context |
-| Fresh | a call older than `signature_ttl` is rejected |
-| Once | each nonce is accepted once, through the cache |
-| Answers | 200 the return value as JSON · 404 `null` · 400 no such message or version · 403 bad signature · 422 a payload its rules refuse |
+- **Signed:** an HMAC of the timestamp, a nonce, the path, the body and the propagated context
+- **Fresh:** a call older than `signature_ttl` is rejected
+- **Once:** each nonce is accepted once, through the cache
+- **Answers:** 200 the return value as JSON · 404 `null` · 400 no such message or version · 403 bad
+  signature · 422 a payload its rules refuse
 
 What a program written in another language has to send is in
 [Programs in other languages](https://mk-josias.github.io/laravel-distributable/docs/other-languages).
